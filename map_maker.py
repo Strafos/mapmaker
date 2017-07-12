@@ -29,10 +29,12 @@ def crop(img):
     return img
 
 #VARIABLES
-DESIRED_ZOOM = '21' # Zoom level of map. 2x zoom for each integer increment  
+DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
 IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
+pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
+
 total_images = pow(2, 2 * IMG_COUNTER - 1)
 
 #CONSTANTS
@@ -86,16 +88,19 @@ if not user_coord_bool:
     x = float(URL[idx + 1:URL.rfind(',')])
 
 # Iterate through coordinates and save a cropped screenshot
+count = 0
 for i in range(-IMG_COUNTER+1,IMG_COUNTER):
     for j in range(-IMG_COUNTER+1, IMG_COUNTER):
         newX = x + CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING * i
         newY = y - CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING * j 
         URL = createURL(MAP_URL, newX, newY, DESIRED_ZOOM)
         browser.get(URL)
-        time.sleep(.5)
-        picstr = str(i) + ',' + str(j) + '.jpg'
+        # time.sleep(.5)
+        picstr = str(i) + ',' + str(j) + pic_format
         browser.save_screenshot(picstr)
         crop(Image.open(picstr)).save(picstr) #open, crop, and save image
+        count = count + 1
+        print str(count) + ' out of ' + total_images
 browser.quit()
 
 # Create blank canvas for stitched image
@@ -108,11 +113,9 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
     for j in range(-IMG_COUNTER+1, IMG_COUNTER):
         x = int(PIXEL_LENGTH * (i + IMG_COUNTER - 1))
         y = int(PIXEL_LENGTH * (j + IMG_COUNTER - 1))
-        picstr = str(i) + ',' + str(j) + '.jpg'
+        picstr = str(i) + ',' + str(j) + pic_format
         image = Image.open(picstr) 
         final_img.paste(image, (x, y))
         os.remove(picstr)
 
-final_img.save('FULL_MAP.jpg')
-
-# final_img.save('FULL_MAP.png') # Use PNG format for pixel dimension > 65500
+final_img.save('FULL_MAP' + pic_format)
