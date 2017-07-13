@@ -35,7 +35,7 @@ DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
 pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
+IMG_COUNTER = 1 #2n - 1 = Number of rows and columns of images
 
 total_images = pow(2 * IMG_COUNTER - 1, 2)
 
@@ -140,5 +140,6 @@ file.write('Zoom: ' + DESIRED_ZOOM + '\n')
 file.write('Picture format: ' + pic_format + '\n')
 file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
 file.write('top, bot, right, left: %s %s %s %s' %(top,bot,right,left))
+file.close()
 
 upload_image.main()
