@@ -35,7 +35,7 @@ DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
 pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 3 #2n - 1 = Number of rows and columns of images
+IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
 
 total_images = pow(2 * IMG_COUNTER - 1, 2)
 
@@ -53,16 +53,16 @@ PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
 ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
 
 #Ask for coordinates
-# user_coord_bool = 'y' == raw_input('Enter in your coordinates? (IP address location by default) [y/n] \n')
-# if user_coord_bool:
-#     valid = False
-#     while not valid: 
-#         y_center = float(input('Enter latitude between [-90, 90]: \n'))
-#         valid =  y_center < 90.0 and y_center > -90.0
-#     valid = False
-#     while not valid:
-#         x_center = float(input('Enter longitude between [-180, 180]: \n'))
-#         valid = x_center < 180.0 and x_center > -180.0
+user_coord_bool = 'y' == raw_input('Enter in your coordinates? (IP address location by default) [y/n] \n')
+if user_coord_bool:
+    valid = False
+    while not valid: 
+        y_center = float(input('Enter latitude between [-90, 90]: \n'))
+        valid =  y_center < 90.0 and y_center > -90.0
+    valid = False
+    while not valid:
+        x_center = float(input('Enter longitude between [-180, 180]: \n'))
+        valid = x_center < 180.0 and x_center > -180.0
 user_coord_bool = False
 
 # Initialize browser and get DPI and resolution of the monitor 
