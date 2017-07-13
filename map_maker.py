@@ -1,6 +1,7 @@
 from selenium import webdriver
 from PIL import Image
 import time
+import upload_image
 import os
  
 # Create a URL for specific latitude, longitude and zoom
@@ -35,7 +36,7 @@ DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment
 IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
 pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
 
-total_images = pow(2, 2 * IMG_COUNTER - 1)
+total_images = pow(2 * IMG_COUNTER - 1, 2)
 
 #CONSTANTS
 #
@@ -100,7 +101,7 @@ for i in range(-IMG_COUNTER+1,IMG_COUNTER):
         browser.save_screenshot(picstr)
         crop(Image.open(picstr)).save(picstr) #open, crop, and save image
         count = count + 1
-        print str(count) + ' out of ' + total_images
+        print '%s out of %s' %(count,total_images)
 browser.quit()
 
 # Create blank canvas for stitched image
@@ -119,3 +120,5 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         os.remove(picstr)
 
 final_img.save('FULL_MAP' + pic_format)
+
+upload_image
