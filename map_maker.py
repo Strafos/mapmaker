@@ -3,6 +3,7 @@ from PIL import Image
 import time
 import upload_image
 import os
+import errno
  
 # Create a URL for specific latitude, longitude and zoom
 # 
@@ -33,8 +34,8 @@ def crop(img):
 DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
-IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
 pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
+IMG_COUNTER = 3 #2n - 1 = Number of rows and columns of images
 
 total_images = pow(2 * IMG_COUNTER - 1, 2)
 
@@ -56,12 +57,12 @@ ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
 # if user_coord_bool:
 #     valid = False
 #     while not valid: 
-#         y = float(input('Enter latitude between [-90, 90]: \n'))
-#         valid =  y < 90.0 and y > -90.0
+#         y_center = float(input('Enter latitude between [-90, 90]: \n'))
+#         valid =  y_center < 90.0 and y_center > -90.0
 #     valid = False
 #     while not valid:
-#         x = float(input('Enter longitude between [-180, 180]: \n'))
-#         valid = x < 180.0 and x > -180.0
+#         x_center = float(input('Enter longitude between [-180, 180]: \n'))
+#         valid = x_center < 180.0 and x_center > -180.0
 user_coord_bool = False
 
 # Initialize browser and get DPI and resolution of the monitor 
@@ -85,22 +86,22 @@ if not user_coord_bool:
     time.sleep(8) # Wait for Google maps URL to update by finding IP address coordinates
     URL = browser.current_url
     idx = URL.find(',')
-    y = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
-    x = float(URL[idx + 1:URL.rfind(',')])
+    y_center = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
+    x_center = float(URL[idx + 1:URL.rfind(',')])
 
 # Iterate through coordinates and save a cropped screenshot
 count = 0
 for i in range(-IMG_COUNTER+1,IMG_COUNTER):
     for j in range(-IMG_COUNTER+1, IMG_COUNTER):
-        newX = x + CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING * i
-        newY = y - CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING * j 
+        newX = x_center + CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING * i
+        newY = y_center - CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING * j 
         URL = createURL(MAP_URL, newX, newY, DESIRED_ZOOM)
         browser.get(URL)
         # time.sleep(.5)
         picstr = str(i) + ',' + str(j) + pic_format
         browser.save_screenshot(picstr)
         crop(Image.open(picstr)).save(picstr) #open, crop, and save image
-        count = count + 1
+        count += 1 
         print '%s out of %s' %(count,total_images)
 browser.quit()
 
@@ -119,6 +120,25 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         final_img.paste(image, (x, y))
         os.remove(picstr)
 
-final_img.save('FULL_MAP' + pic_format)
 
-upload_image
+try:
+    os.makedirs('./map')
+except OSError as exception:
+    if exception.errno != errno.EEXIST:
+        raise
+
+final_img.save('./map/FULL_MAP' + pic_format)
+
+top = y_center + (IMG_COUNTER - 1) * CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING
+bot = y_center - (IMG_COUNTER - 1) * CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING
+right = x_center + (IMG_COUNTER - 1) * CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING
+left = x_center - (IMG_COUNTER - 1) * CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING
+
+file = open('./map/FULL_MAP_DATA.txt', 'w')
+file.write('Center coordinate: (%s, %s) \n' %(y_center, x_center))
+file.write('Zoom: ' + DESIRED_ZOOM + '\n')
+file.write('Picture format: ' + pic_format + '\n')
+file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
+file.write('top, bot, right, left: %s %s %s %s' %(top,bot,right,left))
+
+upload_image.main()
