@@ -5,7 +5,7 @@ import os
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
-def main():
+def main(file_loc):
     try:
         import argparse
         flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
@@ -21,9 +21,12 @@ def main():
                 if flags else tools.run(flow, store)
     DRIVE = build('drive', 'v3', http=creds.authorize(Http()))
 
+    # FILES = (
+    #     ('./map/FULL_MAP_DATA.txt', 'application/vnd.google-apps.document'),
+    #     ('./map/FULL_MAP.png', None),
+    # )
     FILES = (
-        ('./map/FULL_MAP_DATA.txt', 'application/vnd.google-apps.document'),
-        ('./map/FULL_MAP.png', None),
+          (file_loc, None),    
     )
 
     for filename, mimeType in FILES:
