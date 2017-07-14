@@ -35,13 +35,13 @@ DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
 pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 1 #2n - 1 = Number of rows and columns of images
+IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
 
 total_images = pow(2 * IMG_COUNTER - 1, 2)
 
 #CONSTANTS
 #
-#All constants were calibrated simultaneously. DON'T CHANGE THESE VALUES 
+# All constants were calibrated simultaneously. DON'T CHANGE THESE VALUES 
 CALIBRATED_DPI = 120 # Base DPI, later scaled for current monitor
 CALIBRATED_ZOOM = '19' #Zoom level for clear building outlines and street names
 CALIBRATED_UNIT_X = 0.00171849462 #Coordinate equivalent of 800 x pixels at 19 zoom
@@ -100,7 +100,11 @@ for i in range(-IMG_COUNTER+1,IMG_COUNTER):
         # time.sleep(.5)
         picstr = str(i) + ',' + str(j) + pic_format
         browser.save_screenshot(picstr)
-        crop(Image.open(picstr)).save(picstr) #open, crop, and save image
+        # crop(Image.open(picstr)).save(picstr) #open, crop, and save image
+        img = Image.open(picstr)
+        img = crop(img)
+        img.save(picstr)
+        upload_image.main(picstr)
         count += 1 
         print '%s out of %s' %(count,total_images)
 browser.quit()
@@ -142,4 +146,5 @@ file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
 file.write('top, bot, right, left: %s %s %s %s' %(top,bot,right,left))
 file.close()
 
-upload_image.main()
+upload_image.main('./map/FULL_MAP' + pic_format)
+upload_image.main('./map/FULL_MAP_DATA.txt')
