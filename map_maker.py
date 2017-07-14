@@ -63,7 +63,7 @@ if user_coord_bool:
     while not valid:
         x_center = float(input('Enter longitude between [-180, 180]: \n'))
         valid = x_center < 180.0 and x_center > -180.0
-% user_coord_bool = False
+# user_coord_bool = False
 
 # Initialize browser and get DPI and resolution of the monitor 
 browser = webdriver.Chrome()
