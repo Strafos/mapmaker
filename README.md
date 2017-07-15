@@ -1,13 +1,13 @@
 # mapMaker
 Scraps google maps to create high detail maps over a large area
 
-mapMaker.py creates the map
+map_maker is main the main function. For large maps, run image_maker then image_stitcher (equivalent of running map_maker)
 
-imageCropper will crop the map to specified aspect ratio
+Use image_cropper and fix_aspect_ratio to scale map to desired dimensions/area
 
-imageMaker.py and imageStitcher.py run subsequently is equivalent to running mapMaker. Using these two programs instead of mapMaker
-is recommended for large maps (IMG_COUNTER > 15)
+For large maps with IMG_COUNTER > 30, it is recommended to use image_maker_BL/BR/TL/TR to divide the image scraping into separate programs to that run concurrently.  
 
 Dependencies:
 Pillow
 Selenium
+Google Drive python API 
