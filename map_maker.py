@@ -42,6 +42,7 @@ def write_data():
     file.write('Zoom: ' + DESIRED_ZOOM + '\n')
     file.write('Picture format: ' + pic_format + '\n')
     file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
+    file.write('hash_tag: ' + hash_tag + '\n')
     file.close()
     upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
 
@@ -77,7 +78,7 @@ ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
 
 # Make directories for storage
 make_dir('./map')
-make_dir('./map_data')
+# make_dir('./map_data')
 
 #Ask for coordinates
 user_coord_bool = 'y' == raw_input('Enter in your coordinates? (IP address location by default) [y/n] \n')
@@ -115,8 +116,10 @@ if not user_coord_bool:
     y_center = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
     x_center = float(URL[idx + 1:URL.rfind(',')])
 
-folder_id = upload_image.create_folder()
-write_data()
+# Hash coordinates to get unique tag
+hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
+folder_id = upload_image.create_folder(hash_tag)
+write_data() 
 
 count = 0
 # Iterate through coordinates and save a cropped screenshot
