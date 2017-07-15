@@ -2,6 +2,7 @@ from selenium import webdriver
 from PIL import Image
 import time
 import os
+import upload_image
  
 # Create a URL for specific latitude, longitude and zoom
 # 
@@ -28,14 +29,22 @@ def crop(img):
     )
     return img
 
+# Convert to positive indices
+def pos_indices(int):
+    return int + IMG_COUNTER - 1
+
 #VARIABLES
 DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
                     # No significant detail increase after zoom = 19
-IMG_COUNTER = 2 # 2n - 1 = Number of rows and columns of images
+                    # Max zoom is 21
+pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
+IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
+
+total_images = pow(2 * IMG_COUNTER - 1, 2)
 
 #CONSTANTS
 #
-#All constants were calibrated simultaneously. DON'T CHANGE THESE VALUES 
+# All constants were calibrated simultaneously. DON'T CHANGE THESE VALUES 
 CALIBRATED_DPI = 120 # Base DPI, later scaled for current monitor
 CALIBRATED_ZOOM = '19' #Zoom level for clear building outlines and street names
 CALIBRATED_UNIT_X = 0.00171849462 #Coordinate equivalent of 800 x pixels at 19 zoom
@@ -47,16 +56,17 @@ PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
 ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
 
 #Ask for coordinates
-user_coord_bool = 'y' == input('Enter in your coordinates? (IP address location by default) [y/n] \n')
+user_coord_bool = 'y' == raw_input('Enter in your coordinates? (IP address location by default) [y/n] \n')
 if user_coord_bool:
     valid = False
     while not valid: 
-        y = float(input('Enter latitude between [-90, 90]: \n'))
-        valid =  y < 90.0 and y > -90.0
+        y_center = float(input('Enter latitude between [-90, 90]: \n'))
+        valid =  y_center < 90.0 and y_center > -90.0
     valid = False
     while not valid:
-        x = float(input('Enter longitude between [-180, 180]: \n'))
-        valid = x < 180.0 and x > -180.0
+        x_center = float(input('Enter longitude between [-180, 180]: \n'))
+        valid = x_center < 180.0 and x_center > -180.0
+# user_coord_bool = False
 
 # Initialize browser and get DPI and resolution of the monitor 
 browser = webdriver.Chrome()
@@ -79,18 +89,34 @@ if not user_coord_bool:
     time.sleep(8) # Wait for Google maps URL to update by finding IP address coordinates
     URL = browser.current_url
     idx = URL.find(',')
-    y = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
-    x = float(URL[idx + 1:URL.rfind(',')])
+    y_center = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
+    x_center = float(URL[idx + 1:URL.rfind(',')])
 
 # Iterate through coordinates and save a cropped screenshot
+try:
+    os.makedirs('./map_data')
+except OSError as exception:
+    if exception.errno != errno.EEXIST:
+        raise
+count = 0
 for i in range(-IMG_COUNTER+1,IMG_COUNTER):
     for j in range(-IMG_COUNTER+1, IMG_COUNTER):
-        newX = x + CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING * i
-        newY = y - CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING * j 
-        URL = createURL(MAP_URL, newX, newY, DESIRED_ZOOM)
-        browser.get(URL)
-        time.sleep(.5)
-        picstr = str(i) + ',' + str(j) + '.jpg'
-        browser.save_screenshot(picstr)
-        crop(Image.open(picstr)).save(picstr) #open, crop, and save image
+        x = pos_indices(i)
+        y = pos_indices(j)
+        picstr = str(x) + ',' + str(y) + pic_format
+        count += 1 
+        if not os.path.isfile(picstr):
+            newX = x_center + CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING * i
+            newY = y_center - CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING * j 
+            URL = createURL(MAP_URL, newX, newY, DESIRED_ZOOM)
+            browser.get(URL)
+            # time.sleep(.5)
+            browser.save_screenshot(picstr)
+            img = Image.open(picstr)
+            img = crop(img)
+            img.save(picstr)
+            # upload_image.main(picstr)
+        else:
+            print picstr + ' exists, skipping'
+        print '%s out of %s' %(count,total_images)
 browser.quit()

@@ -4,6 +4,7 @@ import time
 import upload_image
 import os
 import errno
+import hashlib
  
 # Create a URL for specific latitude, longitude and zoom
 # 
@@ -29,6 +30,10 @@ def crop(img):
         )
     )
     return img
+
+# Convert to positive indices
+def pos_indices(int):
+    return int + IMG_COUNTER - 1
 
 #VARIABLES
 DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
@@ -63,7 +68,6 @@ if user_coord_bool:
     while not valid:
         x_center = float(input('Enter longitude between [-180, 180]: \n'))
         valid = x_center < 180.0 and x_center > -180.0
-# user_coord_bool = False
 
 # Initialize browser and get DPI and resolution of the monitor 
 browser = webdriver.Chrome()
@@ -90,22 +94,31 @@ if not user_coord_bool:
     x_center = float(URL[idx + 1:URL.rfind(',')])
 
 # Iterate through coordinates and save a cropped screenshot
+try:
+    os.makedirs('./minimap')
+except OSError as exception:
+    if exception.errno != errno.EEXIST:
+        raise
 count = 0
 for i in range(-IMG_COUNTER+1,IMG_COUNTER):
     for j in range(-IMG_COUNTER+1, IMG_COUNTER):
-        newX = x_center + CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING * i
-        newY = y_center - CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING * j 
-        URL = createURL(MAP_URL, newX, newY, DESIRED_ZOOM)
-        browser.get(URL)
-        # time.sleep(.5)
-        picstr = str(i) + ',' + str(j) + pic_format
-        browser.save_screenshot(picstr)
-        # crop(Image.open(picstr)).save(picstr) #open, crop, and save image
-        img = Image.open(picstr)
-        img = crop(img)
-        img.save(picstr)
-        upload_image.main(picstr)
+        x = pos_indices(i)
+        y = pos_indices(j)
+        picstr = str(x) + ',' + str(y) + pic_format
         count += 1 
+        if not os.path.isfile(picstr):
+            newX = x_center + CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING * i
+            newY = y_center - CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING * j 
+            URL = createURL(MAP_URL, newX, newY, DESIRED_ZOOM)
+            browser.get(URL)
+            # time.sleep(.5)
+            browser.save_screenshot(picstr)
+            img = Image.open(picstr)
+            img = crop(img)
+            img.save(picstr)
+            # upload_image.main(picstr)
+        else:
+            print picstr + ' exists, skipping'
         print '%s out of %s' %(count,total_images)
 browser.quit()
 
@@ -117,13 +130,14 @@ final_img = Image.new('RGB', (total_widths, total_heights))
 # Paste individual images onto canvas and delete
 for i in range(-IMG_COUNTER+1, IMG_COUNTER):
     for j in range(-IMG_COUNTER+1, IMG_COUNTER):
-        x = int(PIXEL_LENGTH * (i + IMG_COUNTER - 1))
-        y = int(PIXEL_LENGTH * (j + IMG_COUNTER - 1))
-        picstr = str(i) + ',' + str(j) + pic_format
+        x = pos_indices(i)
+        y = pos_indices(j)
+        x_coord = int(PIXEL_LENGTH * x)
+        y_coord = int(PIXEL_LENGTH * y)
+        picstr = str(x) + ',' + str(y) + pic_format
         image = Image.open(picstr) 
-        final_img.paste(image, (x, y))
+        final_img.paste(image, (x_coord, y_coord))
         os.remove(picstr)
-
 
 try:
     os.makedirs('./map')
@@ -146,5 +160,5 @@ file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
 file.write('top, bot, right, left: %s %s %s %s' %(top,bot,right,left))
 file.close()
 
-upload_image.main('./map/FULL_MAP' + pic_format)
-upload_image.main('./map/FULL_MAP_DATA.txt')
+# upload_image.main('./map/FULL_MAP' + pic_format)
+# upload_image.main('./map/FULL_MAP_DATA.txt')
