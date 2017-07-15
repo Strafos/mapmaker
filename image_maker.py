@@ -2,8 +2,10 @@ from selenium import webdriver
 from PIL import Image
 import time
 import os
+import errno
 import upload_image
- 
+import hashlib
+
 # Create a URL for specific latitude, longitude and zoom
 # 
 # Each google maps image is composed of latitude, longitude, zoom
@@ -33,6 +35,26 @@ def crop(img):
 def pos_indices(int):
     return int + IMG_COUNTER - 1
 
+# Save data necessary to replicate program run
+def write_data():
+    file = open('./map/FULL_MAP_DATA.txt', 'w')
+    file.write('Center coordinate: (%s, %s) \n' %(y_center, x_center))
+    file.write('Zoom: ' + DESIRED_ZOOM + '\n')
+    file.write('Picture format: ' + pic_format + '\n')
+    file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
+    file.write('Folder ID: %s' %(folder_id))
+    file.write('hash_tag: ' + hash_tag + '\n')
+    file.close()
+    upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
+
+# Make directory with dir_name
+def make_dir(dir_name):
+    try:
+        os.makedirs(dir_name)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+
 #VARIABLES
 DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
                     # No significant detail increase after zoom = 19
@@ -55,6 +77,10 @@ PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
 # Adjust from base zoom level of 19 and recalibrate for large monitor
 ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
 
+# Make directories for storage
+make_dir('./map')
+# make_dir('./map_data')
+
 #Ask for coordinates
 user_coord_bool = 'y' == raw_input('Enter in your coordinates? (IP address location by default) [y/n] \n')
 if user_coord_bool:
@@ -66,7 +92,6 @@ if user_coord_bool:
     while not valid:
         x_center = float(input('Enter longitude between [-180, 180]: \n'))
         valid = x_center < 180.0 and x_center > -180.0
-# user_coord_bool = False
 
 # Initialize browser and get DPI and resolution of the monitor 
 browser = webdriver.Chrome()
@@ -92,13 +117,13 @@ if not user_coord_bool:
     y_center = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
     x_center = float(URL[idx + 1:URL.rfind(',')])
 
-# Iterate through coordinates and save a cropped screenshot
-try:
-    os.makedirs('./map_data')
-except OSError as exception:
-    if exception.errno != errno.EEXIST:
-        raise
+# Hash coordinates to get unique tag
+hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
+folder_id = upload_image.create_folder(hash_tag)
+write_data() 
+
 count = 0
+# Iterate through coordinates and save a cropped screenshot
 for i in range(-IMG_COUNTER+1,IMG_COUNTER):
     for j in range(-IMG_COUNTER+1, IMG_COUNTER):
         x = pos_indices(i)
@@ -115,8 +140,9 @@ for i in range(-IMG_COUNTER+1,IMG_COUNTER):
             img = Image.open(picstr)
             img = crop(img)
             img.save(picstr)
-            # upload_image.main(picstr)
+            upload_image.main(picstr, folder_id)
         else:
             print picstr + ' exists, skipping'
         print '%s out of %s' %(count,total_images)
 browser.quit()
+
