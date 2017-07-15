@@ -35,6 +35,24 @@ def crop(img):
 def pos_indices(int):
     return int + IMG_COUNTER - 1
 
+# Save data necessary to replicate program run
+def write_data():
+    file = open('./map/FULL_MAP_DATA.txt', 'w')
+    file.write('Center coordinate: (%s, %s) \n' %(y_center, x_center))
+    file.write('Zoom: ' + DESIRED_ZOOM + '\n')
+    file.write('Picture format: ' + pic_format + '\n')
+    file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
+    file.close()
+    upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
+
+# Make directory with dir_name
+def make_dir(dir_name):
+    try:
+        os.makedirs(dir_name)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+
 #VARIABLES
 DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
                     # No significant detail increase after zoom = 19
@@ -56,6 +74,10 @@ PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
 
 # Adjust from base zoom level of 19 and recalibrate for large monitor
 ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
+
+# Make directories for storage
+make_dir('./map')
+make_dir('./map_data')
 
 #Ask for coordinates
 user_coord_bool = 'y' == raw_input('Enter in your coordinates? (IP address location by default) [y/n] \n')
@@ -93,13 +115,11 @@ if not user_coord_bool:
     y_center = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
     x_center = float(URL[idx + 1:URL.rfind(',')])
 
-# Iterate through coordinates and save a cropped screenshot
-try:
-    os.makedirs('./minimap')
-except OSError as exception:
-    if exception.errno != errno.EEXIST:
-        raise
+folder_id = upload_image.create_folder()
+write_data()
+
 count = 0
+# Iterate through coordinates and save a cropped screenshot
 for i in range(-IMG_COUNTER+1,IMG_COUNTER):
     for j in range(-IMG_COUNTER+1, IMG_COUNTER):
         x = pos_indices(i)
@@ -116,7 +136,7 @@ for i in range(-IMG_COUNTER+1,IMG_COUNTER):
             img = Image.open(picstr)
             img = crop(img)
             img.save(picstr)
-            # upload_image.main(picstr)
+            upload_image.main(picstr, folder_id)
         else:
             print picstr + ' exists, skipping'
         print '%s out of %s' %(count,total_images)
@@ -139,26 +159,5 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         final_img.paste(image, (x_coord, y_coord))
         os.remove(picstr)
 
-try:
-    os.makedirs('./map')
-except OSError as exception:
-    if exception.errno != errno.EEXIST:
-        raise
-
 final_img.save('./map/FULL_MAP' + pic_format)
-
-top = y_center + (IMG_COUNTER - 1) * CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING
-bot = y_center - (IMG_COUNTER - 1) * CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING
-right = x_center + (IMG_COUNTER - 1) * CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING
-left = x_center - (IMG_COUNTER - 1) * CALIBRATED_UNIT_X * DPI_X / ZOOM_SCALING
-
-file = open('./map/FULL_MAP_DATA.txt', 'w')
-file.write('Center coordinate: (%s, %s) \n' %(y_center, x_center))
-file.write('Zoom: ' + DESIRED_ZOOM + '\n')
-file.write('Picture format: ' + pic_format + '\n')
-file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
-file.write('top, bot, right, left: %s %s %s %s' %(top,bot,right,left))
-file.close()
-
-# upload_image.main('./map/FULL_MAP' + pic_format)
-# upload_image.main('./map/FULL_MAP_DATA.txt')
+upload_image.main('./map/FULL_MAP' + pic_format, folder_id)
