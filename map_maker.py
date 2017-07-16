@@ -55,11 +55,11 @@ def make_dir(dir_name):
             raise
 
 #VARIABLES
-DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
+DESIRED_ZOOM = '21' # Zoom level of map. 2x zoom for each integer increment  
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
 pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
+IMG_COUNTER = 70 # Size of the map
 
 total_images = pow(2 * IMG_COUNTER - 1, 2)
 
@@ -151,6 +151,7 @@ total_heights = int((2 * IMG_COUNTER - 1) * PIXEL_LENGTH)
 final_img = Image.new('RGB', (total_widths, total_heights))
 
 # Paste individual images onto canvas and delete
+count = 0
 for i in range(-IMG_COUNTER+1, IMG_COUNTER):
     for j in range(-IMG_COUNTER+1, IMG_COUNTER):
         x = pos_indices(i)
@@ -158,6 +159,7 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         x_coord = int(PIXEL_LENGTH * x)
         y_coord = int(PIXEL_LENGTH * y)
         picstr = str(x) + ',' + str(y) + pic_format
+        print count + ' out of ' total_images
         image = Image.open(picstr) 
         final_img.paste(image, (x_coord, y_coord))
         os.remove(picstr)
