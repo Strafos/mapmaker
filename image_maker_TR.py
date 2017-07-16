@@ -1,5 +1,12 @@
 # For running program concurrently, TOP RIGHT 
 
+from selenium import webdriver
+from PIL import Image
+import time
+import os
+import errno
+import upload_image
+import hashlib
 # Create a URL for specific latitude, longitude and zoom
 # 
 # Each google maps image is composed of latitude, longitude, zoom
@@ -50,11 +57,11 @@ def make_dir(dir_name):
             raise
 
 #VARIABLES
-DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
+DESIRED_ZOOM = '21' # Zoom level of map. 2x zoom for each integer increment  
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
 pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
+IMG_COUNTER = 70 #2n - 1 = Number of rows and columns of images
 
 total_images = pow(2 * IMG_COUNTER - 1, 2)
 
