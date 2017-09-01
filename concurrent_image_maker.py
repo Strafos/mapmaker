@@ -65,11 +65,11 @@ def main(frame):
     
 
     #VARIABLES
-    DESIRED_ZOOM = '21' # Zoom level of map. 2x zoom for each integer increment  
+    DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
                         # No significant detail increase after zoom = 19
                         # Max zoom is 21
     pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-    IMG_COUNTER = 5 #2n - 1 = Number of rows and columns of images
+    IMG_COUNTER = 10 #2n - 1 = Number of rows and columns of images
 
     total_images = pow(2 * IMG_COUNTER - 1, 2)
 
@@ -126,6 +126,9 @@ def main(frame):
         idx = URL.find(',')
         y_center = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
         x_center = float(URL[idx + 1:URL.rfind(',')])
+        y_center = 40.776616
+        x_center = -73.966324
+
 
     # Hash coordinates to get unique tag
     hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
@@ -171,4 +174,4 @@ thread.start_new_thread(main, ('TL',))
 thread.start_new_thread(main, ('BL',))
 
 while 1:
-   pass
+    pass

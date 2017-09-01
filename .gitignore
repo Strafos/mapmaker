@@ -1,0 +1,5 @@
+config.py
+.vscode
+test.py
+*.json
+*.pyc

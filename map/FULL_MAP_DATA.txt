@@ -1,0 +1,5 @@
+Center coordinate: (40.776616, -73.966324) 
+Zoom: 19
+Picture format: .png
+IMG_COUNTER: 10
+hash_tag: 59d

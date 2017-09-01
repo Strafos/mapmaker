@@ -6,7 +6,7 @@ import upload_image
 ### VARIABLES
 # MAKE SURE THESE MATCH THE ONES IN image_maker.py 
 PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
-IMG_COUNTER = 2 # 2n - 1 = Number of rows and columns of images
+IMG_COUNTER = 10 # 2n - 1 = Number of rows and columns of images
 pic_format = '.png' # Use png for 65500 pixel+ images
 
 # Convert to positive indices

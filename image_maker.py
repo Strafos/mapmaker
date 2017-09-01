@@ -1,10 +1,12 @@
-from selenium import webdriver
-from PIL import Image
 import time
 import os
 import errno
-import upload_image
 import hashlib
+
+from selenium import webdriver
+from PIL import Image
+
+import upload_image
 
 # Create a URL for specific latitude, longitude and zoom
 # 
@@ -145,4 +147,3 @@ for i in range(-IMG_COUNTER+1,IMG_COUNTER):
             print picstr + ' exists, skipping'
         print '%s out of %s' %(count,total_images)
 browser.quit()
-

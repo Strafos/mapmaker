@@ -1,10 +1,14 @@
-from selenium import webdriver
-from PIL import Image
 import time
-import upload_image
 import os
 import errno
 import hashlib
+
+from selenium import webdriver
+from PIL import Image
+
+upload = False
+if upload:
+    import upload_image
  
 # Create a URL for specific latitude, longitude and zoom
 # 
@@ -42,9 +46,10 @@ def write_data():
     file.write('Zoom: ' + DESIRED_ZOOM + '\n')
     file.write('Picture format: ' + pic_format + '\n')
     file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
-    file.write('hash_tag: ' + hash_tag + '\n')
+    if upload:
+        file.write('hash_tag: ' + hash_tag + '\n')
+        upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
     file.close()
-    upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
 
 # Make directory with dir_name
 def make_dir(dir_name):
@@ -59,7 +64,7 @@ DESIRED_ZOOM = '21' # Zoom level of map. 2x zoom for each integer increment
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
 pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 70 # Size of the map
+IMG_COUNTER = 5 # Size of the map
 
 total_images = pow(2 * IMG_COUNTER - 1, 2)
 
@@ -69,7 +74,7 @@ total_images = pow(2 * IMG_COUNTER - 1, 2)
 CALIBRATED_DPI = 120 # Base DPI, later scaled for current monitor
 CALIBRATED_ZOOM = '19' #Zoom level for clear building outlines and street names
 CALIBRATED_UNIT_X = 0.00171849462 #Coordinate equivalent of 800 x pixels at 19 zoom
-CALIBRATED_ASPECT_RATIO = 1920 / 1080.0 #Resolution of computer
+CALIBRATED_ASPECT_RATIO = 1920 / 1080.0 #Resolution of computer (DO NOT CHANGE EVEN IF YOUR RESOLUTION DOES NOT MATCH)
 MAP_URL = 'https://www.google.com/maps/@' #Base URL for google maps
 PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
 
@@ -94,7 +99,7 @@ if user_coord_bool:
 
 # Initialize browser and get DPI and resolution of the monitor 
 browser = webdriver.Chrome()
-browser.maximize_window()
+# browser.maximize_window()
 browser.get('https://www.infobyip.com/detectmonitordpi.php')
 DPI = browser.find_element_by_xpath('//*[@id="text"]').text
 idx = DPI.find(' ')
@@ -117,8 +122,9 @@ if not user_coord_bool:
     x_center = float(URL[idx + 1:URL.rfind(',')])
 
 # Hash coordinates to get unique tag
-hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
-folder_id = upload_image.create_folder(hash_tag)
+if upload:
+    hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
+    folder_id = upload_image.create_folder(hash_tag)
 write_data() 
 
 count = 0
@@ -139,7 +145,8 @@ for i in range(-IMG_COUNTER+1,IMG_COUNTER):
             img = Image.open(picstr)
             img = crop(img)
             img.save(picstr)
-            upload_image.main(picstr, folder_id)
+            if upload:
+                upload_image.main(picstr, folder_id)
         else:
             print picstr + ' exists, skipping'
         print '%s out of %s' %(count,total_images)
@@ -159,10 +166,11 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         x_coord = int(PIXEL_LENGTH * x)
         y_coord = int(PIXEL_LENGTH * y)
         picstr = str(x) + ',' + str(y) + pic_format
-        print count + ' out of ' total_images
+        print count + ' out of ' + total_images
         image = Image.open(picstr) 
         final_img.paste(image, (x_coord, y_coord))
         os.remove(picstr)
 
 final_img.save('./map/FULL_MAP' + pic_format)
-upload_image.main('./map/FULL_MAP' + pic_format, folder_id)
+if upload:
+    upload_image.main('./map/FULL_MAP' + pic_format, folder_id)
