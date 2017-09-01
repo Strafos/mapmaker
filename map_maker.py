@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import time
 import os
 import errno
@@ -64,7 +65,7 @@ DESIRED_ZOOM = '21' # Zoom level of map. 2x zoom for each integer increment
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
 pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 5 # Size of the map
+IMG_COUNTER = 1 # Size of the map
 
 total_images = pow(2 * IMG_COUNTER - 1, 2)
 
@@ -148,8 +149,8 @@ for i in range(-IMG_COUNTER+1,IMG_COUNTER):
             if upload:
                 upload_image.main(picstr, folder_id)
         else:
-            print picstr + ' exists, skipping'
-        print '%s out of %s' %(count,total_images)
+            print('%s exists, skipping' %(picstr))
+        print('%s out of %s' %(count,total_images))
 browser.quit()
 
 # Create blank canvas for stitched image
@@ -166,7 +167,7 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         x_coord = int(PIXEL_LENGTH * x)
         y_coord = int(PIXEL_LENGTH * y)
         picstr = str(x) + ',' + str(y) + pic_format
-        print count + ' out of ' + total_images
+        print('%s out of %s' %(count, total_images))
         image = Image.open(picstr) 
         final_img.paste(image, (x_coord, y_coord))
         os.remove(picstr)
