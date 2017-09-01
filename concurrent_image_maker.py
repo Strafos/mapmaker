@@ -14,8 +14,7 @@ from PIL import Image
 
 
 # Change upload to true to set up google drive upload capabiltiies
-upload = False
-if upload:
+if UPLOAD:
     import upload_image
 
 def main(frame):
@@ -33,14 +32,14 @@ def main(frame):
     # Crop the maps image at the center to remove logos and watermarks to
     #   create a 800 x 800 pixel image
     def crop(img):
-        half_the_width = img.size[0] / 2
-        half_the_height = img.size[1] / 2
+        half_the_width = img.size[0] // 2
+        half_the_height = img.size[1] // 2
         img = img.crop(
             (
-                half_the_width - PIXEL_LENGTH / 2,
-                half_the_height - PIXEL_LENGTH / 2,
-                half_the_width + PIXEL_LENGTH / 2,
-                half_the_height + PIXEL_LENGTH / 2
+                half_the_width - PIXEL_LENGTH // 2,
+                half_the_height - PIXEL_LENGTH // 2,
+                half_the_width + PIXEL_LENGTH // 2,
+                half_the_height + PIXEL_LENGTH // 2
             )
         )
         return img
@@ -56,9 +55,9 @@ def main(frame):
         file.write('Zoom: ' + DESIRED_ZOOM + '\n')
         file.write('Picture format: ' + pic_format + '\n')
         file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
-        if upload:
+        if UPLOAD:
             upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
-        file.write('Folder ID: %s' %(folder_id))
+            file.write('Folder ID: %s' %(folder_id))
         file.write('hash_tag: ' + hash_tag + '\n')
         file.close()
 
@@ -75,14 +74,13 @@ def main(frame):
 
     # Make directories for storage
     make_dir('./map')
-    make_dir('./map_data')
+    # make_dir('./map_data')
 
     # There are some bugs with chromedriver maximizing
     def keeptrying():
         try:
             browser.maximize_window()
         except:
-            print('worked lol')
             keeptrying()
 
     # Initialize browser and get DPI and resolution of the monitor 
@@ -102,10 +100,9 @@ def main(frame):
     CALIBRATED_UNIT_Y = 0.00171849462 - .0004516129 * ASPECT_RATIO_SCALING
 
     #Get google maps main page and extract present coordinates
-    # if not user_coord_bool:
-    if True:
+    if not ENTER_COOR:
         browser.get(MAP_URL)
-        time.sleep(8) # Wait for Google maps URL to update by finding IP address coordinates
+        time.sleep(5) # Wait for Google maps URL to update by finding IP address coordinates
         URL = browser.current_url
         idx = URL.find(',')
         y_center = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
@@ -116,7 +113,7 @@ def main(frame):
 
     # Hash coordinates to get unique tag
     hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
-    if upload:
+    if UPLOAD:
         folder_id = upload_image.create_folder(hash_tag)
     else:
         folder_id = 'null'
@@ -144,12 +141,11 @@ def main(frame):
                 newY = y_center - CALIBRATED_UNIT_Y * DPI_Y / ZOOM_SCALING * j 
                 URL = createURL(MAP_URL, newX, newY, DESIRED_ZOOM)
                 browser.get(URL)
-                # time.sleep(.5)
                 browser.save_screenshot(picstr)
                 img = Image.open(picstr)
                 img = crop(img)
                 img.save(picstr)
-                if upload:
+                if UPLOAD:
                     upload_image.main(picstr, folder_id)
             else:
                 print('%s exists, skipping' %(picstr))

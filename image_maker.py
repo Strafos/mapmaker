@@ -9,8 +9,7 @@ from PIL import Image
 # Look in constants.py to change map settings
 from constants import *
 # Change upload to true to set up google drive upload capabiltiies
-upload = False
-if upload:
+if UPLOAD:
     import upload_image
 
 # Create a URL for specific latitude, longitude and zoom
@@ -50,9 +49,10 @@ def write_data():
     file.write('Picture format: ' + pic_format + '\n')
     file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
     file.write('Folder ID: %s' %(folder_id))
-    file.write('hash_tag: ' + hash_tag + '\n')
+    if UPLOAD:
+        file.write('hash_tag: ' + hash_tag + '\n')
+        upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
     file.close()
-    upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
 
 # Make directory with dir_name
 def make_dir(dir_name):
@@ -62,43 +62,12 @@ def make_dir(dir_name):
         if exception.errno != errno.EEXIST:
             raise
 
-#VARIABLES
-DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
-                    # No significant detail increase after zoom = 19
-                    # Max zoom is 21
-pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 2 #2n - 1 = Number of rows and columns of images
-
-total_images = pow(2 * IMG_COUNTER - 1, 2)
-
-#CONSTANTS
-#
-# All constants were calibrated simultaneously. DON'T CHANGE THESE VALUES 
-CALIBRATED_DPI = 120 # Base DPI, later scaled for current monitor
-CALIBRATED_ZOOM = '19' #Zoom level for clear building outlines and street names
-CALIBRATED_UNIT_X = 0.00171849462 #Coordinate equivalent of 800 x pixels at 19 zoom
-CALIBRATED_ASPECT_RATIO = 1920 / 1080.0 #Resolution of computer
-MAP_URL = 'https://www.google.com/maps/@' #Base URL for google maps
-PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
-
 # Adjust from base zoom level of 19 and recalibrate for large monitor
 ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
 
 # Make directories for storage
 make_dir('./map')
 # make_dir('./map_data')
-
-#Ask for coordinates
-user_coord_bool = 'y' == raw_input('Enter in your coordinates? (IP address location by default) [y/n] \n')
-if user_coord_bool:
-    valid = False
-    while not valid: 
-        y_center = float(input('Enter latitude between [-90, 90]: \n'))
-        valid =  y_center < 90.0 and y_center > -90.0
-    valid = False
-    while not valid:
-        x_center = float(input('Enter longitude between [-180, 180]: \n'))
-        valid = x_center < 180.0 and x_center > -180.0
 
 # Initialize browser and get DPI and resolution of the monitor 
 browser = webdriver.Chrome()
@@ -116,7 +85,7 @@ ASPECT_RATIO_SCALING = ratio / CALIBRATED_ASPECT_RATIO
 CALIBRATED_UNIT_Y = 0.00171849462 - .0004516129 * ASPECT_RATIO_SCALING
 
 #Get google maps main page and extract present coordinates
-if not user_coord_bool:
+if not ENTER_COOR:
     browser.get(MAP_URL)
     time.sleep(8) # Wait for Google maps URL to update by finding IP address coordinates
     URL = browser.current_url
@@ -125,8 +94,9 @@ if not user_coord_bool:
     x_center = float(URL[idx + 1:URL.rfind(',')])
 
 # Hash coordinates to get unique tag
-hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
-folder_id = upload_image.create_folder(hash_tag)
+if UPLOAD:
+    hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
+    folder_id = upload_image.create_folder(hash_tag)
 write_data() 
 
 count = 0
@@ -149,6 +119,6 @@ for i in range(-IMG_COUNTER+1,IMG_COUNTER):
             img.save(picstr)
             upload_image.main(picstr, folder_id)
         else:
-            print picstr + ' exists, skipping'
-        print '%s out of %s' %(count,total_images)
+            print(picstr + ' exists, skipping')
+        print('%s out of %s' %(count,total_images))
 browser.quit()

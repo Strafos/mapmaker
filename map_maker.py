@@ -11,8 +11,7 @@ from PIL import Image
 from constants import *
 
 # Change upload to true to set up google drive upload capabiltiies
-upload = False
-if upload:
+if UPLOAD:
     import upload_image
  
 # Create a URL for specific latitude, longitude and zoom
@@ -30,7 +29,7 @@ def createURL(MAP_URL, long, lat, zoom = '13'):
 def crop(img):
     half_the_width = img.size[0] // 2
     half_the_height = img.size[1] // 2
-    nimg = img.crop(
+    img = img.crop(
         (
             half_the_width - PIXEL_LENGTH // 2,
             half_the_height - PIXEL_LENGTH // 2,
@@ -38,7 +37,7 @@ def crop(img):
             half_the_height + PIXEL_LENGTH // 2
         )
     )
-    return nimg
+    return img
 
 # Convert to positive indices
 def pos_indices(int):
@@ -51,8 +50,9 @@ def write_data():
     file.write('Zoom: ' + DESIRED_ZOOM + '\n')
     file.write('Picture format: ' + pic_format + '\n')
     file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
-    if upload:
-        file.write('hash_tag: ' + hash_tag + '\n')
+    file.write('hash_tag: ' + hash_tag + '\n')
+    if UPLOAD:
+        file.write('Folder ID: %s' %(folder_id))
         upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
     file.close()
 
@@ -71,19 +71,6 @@ ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
 make_dir('./map')
 # make_dir('./map_data')
 
-#Ask for coordinates
-# user_coord_bool = 'y' == str(input('Enter in your coordinates? (IP address location by default) [y/n] \n'))
-user_coord_bool = False
-if user_coord_bool:
-    valid = False
-    while not valid: 
-        y_center = float(input('Enter latitude between [-90, 90]: \n'))
-        valid =  y_center < 90.0 and y_center > -90.0
-    valid = False
-    while not valid:
-        x_center = float(input('Enter longitude between [-180, 180]: \n'))
-        valid = x_center < 180.0 and x_center > -180.0
-
 # Initialize browser and get DPI and resolution of the monitor 
 browser = webdriver.Chrome()
 browser.maximize_window()
@@ -99,8 +86,8 @@ ratio = float(browser.find_element_by_xpath('//*[@id="aspect_ratio"]').text)
 ASPECT_RATIO_SCALING = ratio / CALIBRATED_ASPECT_RATIO
 CALIBRATED_UNIT_Y = 0.00171849462 - .0004516129 * ASPECT_RATIO_SCALING
 
-#Get google maps main page and extract present coordinates
-if not user_coord_bool:
+#Get google maps main page and extract present coordinates if user did not enter
+if not ENTER_COOR:
     browser.get(MAP_URL)
     time.sleep(4) # Wait for Google maps URL to update by finding IP address coordinates
     URL = browser.current_url
@@ -109,9 +96,11 @@ if not user_coord_bool:
     x_center = float(URL[idx + 1:URL.rfind(',')])
 
 # Hash coordinates to get unique tag
-if upload:
-    hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
+hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
+if UPLOAD:
     folder_id = upload_image.create_folder(hash_tag)
+else:
+    folder_id = 'null'
 write_data() 
 
 count = 0
@@ -132,7 +121,7 @@ for i in range(-IMG_COUNTER+1,IMG_COUNTER):
             img = Image.open(picstr)
             img = crop(img)
             img.save(picstr)
-            if upload:
+            if UPLOAD:
                 upload_image.main(picstr, folder_id)
         else:
             print('%s exists, skipping' %(picstr))
@@ -160,5 +149,5 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         os.remove(picstr)
 
 final_img.save('./map/FULL_MAP' + pic_format)
-if upload:
+if UPLOAD:
     upload_image.main('./map/FULL_MAP' + pic_format, folder_id)

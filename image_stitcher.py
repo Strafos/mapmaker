@@ -5,8 +5,7 @@ from PIL import Image
 
 # Look in constants.py to change map settings
 from constants import *
-upload = False
-if upload:
+if UPLOAD:
     import upload_image
 
 # Convert to positive indices
@@ -31,5 +30,5 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         # os.remove(picstr)
 
 final_img.save('./map/FULL_MAP' + pic_format)
-if upload:
+if UPLOAD:
     upload_image.main('./map/FULL_MAP' + pic_format, '')
