@@ -7,6 +7,10 @@ import hashlib
 from selenium import webdriver
 from PIL import Image
 
+# Look in constants.py to change map settings
+from constants import *
+
+# Change upload to true to set up google drive upload capabiltiies
 upload = False
 if upload:
     import upload_image
@@ -24,17 +28,17 @@ def createURL(MAP_URL, long, lat, zoom = '13'):
 # Crop the maps image at the center to remove logos and watermarks to
 #   create a 800 x 800 pixel image
 def crop(img):
-    half_the_width = img.size[0] / 2
-    half_the_height = img.size[1] / 2
-    img = img.crop(
+    half_the_width = img.size[0] // 2
+    half_the_height = img.size[1] // 2
+    nimg = img.crop(
         (
-            half_the_width - PIXEL_LENGTH / 2,
-            half_the_height - PIXEL_LENGTH / 2,
-            half_the_width + PIXEL_LENGTH / 2,
-            half_the_height + PIXEL_LENGTH / 2
+            half_the_width - PIXEL_LENGTH // 2,
+            half_the_height - PIXEL_LENGTH // 2,
+            half_the_width + PIXEL_LENGTH // 2,
+            half_the_height + PIXEL_LENGTH // 2
         )
     )
-    return img
+    return nimg
 
 # Convert to positive indices
 def pos_indices(int):
@@ -60,25 +64,6 @@ def make_dir(dir_name):
         if exception.errno != errno.EEXIST:
             raise
 
-#VARIABLES
-DESIRED_ZOOM = '21' # Zoom level of map. 2x zoom for each integer increment  
-                    # No significant detail increase after zoom = 19
-                    # Max zoom is 21
-pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 1 # Size of the map
-
-total_images = pow(2 * IMG_COUNTER - 1, 2)
-
-#CONSTANTS
-#
-# All constants were calibrated simultaneously. DON'T CHANGE THESE VALUES 
-CALIBRATED_DPI = 120 # Base DPI, later scaled for current monitor
-CALIBRATED_ZOOM = '19' #Zoom level for clear building outlines and street names
-CALIBRATED_UNIT_X = 0.00171849462 #Coordinate equivalent of 800 x pixels at 19 zoom
-CALIBRATED_ASPECT_RATIO = 1920 / 1080.0 #Resolution of computer (DO NOT CHANGE EVEN IF YOUR RESOLUTION DOES NOT MATCH)
-MAP_URL = 'https://www.google.com/maps/@' #Base URL for google maps
-PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
-
 # Adjust from base zoom level of 19 and recalibrate for large monitor
 ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
 
@@ -87,7 +72,8 @@ make_dir('./map')
 # make_dir('./map_data')
 
 #Ask for coordinates
-user_coord_bool = 'y' == raw_input('Enter in your coordinates? (IP address location by default) [y/n] \n')
+# user_coord_bool = 'y' == str(input('Enter in your coordinates? (IP address location by default) [y/n] \n'))
+user_coord_bool = False
 if user_coord_bool:
     valid = False
     while not valid: 
@@ -100,7 +86,7 @@ if user_coord_bool:
 
 # Initialize browser and get DPI and resolution of the monitor 
 browser = webdriver.Chrome()
-# browser.maximize_window()
+browser.maximize_window()
 browser.get('https://www.infobyip.com/detectmonitordpi.php')
 DPI = browser.find_element_by_xpath('//*[@id="text"]').text
 idx = DPI.find(' ')
@@ -116,7 +102,7 @@ CALIBRATED_UNIT_Y = 0.00171849462 - .0004516129 * ASPECT_RATIO_SCALING
 #Get google maps main page and extract present coordinates
 if not user_coord_bool:
     browser.get(MAP_URL)
-    time.sleep(8) # Wait for Google maps URL to update by finding IP address coordinates
+    time.sleep(4) # Wait for Google maps URL to update by finding IP address coordinates
     URL = browser.current_url
     idx = URL.find(',')
     y_center = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
@@ -167,6 +153,7 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         x_coord = int(PIXEL_LENGTH * x)
         y_coord = int(PIXEL_LENGTH * y)
         picstr = str(x) + ',' + str(y) + pic_format
+        count += 1
         print('%s out of %s' %(count, total_images))
         image = Image.open(picstr) 
         final_img.paste(image, (x_coord, y_coord))

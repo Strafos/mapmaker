@@ -1,18 +1,23 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+import _thread
+# Look in constants.py to change map settings
+from constants import *
+import time
+import os
+import errno
+import hashlib
+import sys
 
-import thread
+from selenium import webdriver
+from PIL import Image
+
+
+# Change upload to true to set up google drive upload capabiltiies
+upload = False
+if upload:
+    import upload_image
 
 def main(frame):
-    import time
-    import os
-    import errno
-    import hashlib
-    import sys
-
-    from selenium import webdriver
-    from PIL import Image
-
-    import upload_image
 
     # Create a URL for specific latitude, longitude and zoom
     # 
@@ -50,10 +55,11 @@ def main(frame):
         file.write('Zoom: ' + DESIRED_ZOOM + '\n')
         file.write('Picture format: ' + pic_format + '\n')
         file.write('IMG_COUNTER: ' + str(IMG_COUNTER) + '\n')
-        # file.write('Folder ID: %s' %(folder_id))
+        if upload:
+            upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
+        file.write('Folder ID: %s' %(folder_id))
         file.write('hash_tag: ' + hash_tag + '\n')
         file.close()
-        # upload_image.main('./map/FULL_MAP_DATA.txt', folder_id)
 
     # Make directory with dir_name
     def make_dir(dir_name):
@@ -62,26 +68,6 @@ def main(frame):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-    
-
-    #VARIABLES
-    DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
-                        # No significant detail increase after zoom = 19
-                        # Max zoom is 21
-    pic_format = '.png' # '.jpg' Use png for large images (pixel dimension > 65500)
-    IMG_COUNTER = 10 #2n - 1 = Number of rows and columns of images
-
-    total_images = pow(2 * IMG_COUNTER - 1, 2)
-
-    #CONSTANTS
-    #
-    # All constants were calibrated simultaneously. DON'T CHANGE THESE VALUES 
-    CALIBRATED_DPI = 120 # Base DPI, later scaled for current monitor
-    CALIBRATED_ZOOM = '19' #Zoom level for clear building outlines and street names
-    CALIBRATED_UNIT_X = 0.00171849462 #Coordinate equivalent of 800 x pixels at 19 zoom
-    CALIBRATED_ASPECT_RATIO = 1920 / 1080.0 #Resolution of computer
-    MAP_URL = 'https://www.google.com/maps/@' #Base URL for google maps
-    PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
 
     # Adjust from base zoom level of 19 and recalibrate for large monitor
     ZOOM_SCALING = pow(2, int(DESIRED_ZOOM) - int(CALIBRATED_ZOOM))
@@ -90,21 +76,9 @@ def main(frame):
     make_dir('./map')
     make_dir('./map_data')
 
-    #Ask for coordinates
-    # user_coord_bool = 'y' == raw_input('Enter in your coordinates? (IP address location by default) [y/n] \n')
-    # if user_coord_bool:
-    #     valid = False
-    #     while not valid: 
-    #         y_center = float(input('Enter latitude between [-90, 90]: \n'))
-    #         valid =  y_center < 90.0 and y_center > -90.0
-    #     valid = False
-    #     while not valid:
-    #         x_center = float(input('Enter longitude between [-180, 180]: \n'))
-    #         valid = x_center < 180.0 and x_center > -180.0
-
     # Initialize browser and get DPI and resolution of the monitor 
     browser = webdriver.Chrome()
-    # browser.maximize_window()
+    browser.maximize_window()
     browser.get('https://www.infobyip.com/detectmonitordpi.php')
     DPI = browser.find_element_by_xpath('//*[@id="text"]').text
     idx = DPI.find(' ')
@@ -132,7 +106,10 @@ def main(frame):
 
     # Hash coordinates to get unique tag
     hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
-    # folder_id = upload_image.create_folder(hash_tag)
+    if upload:
+        folder_id = upload_image.create_folder(hash_tag)
+    else:
+        folder_id = 'null'
     write_data() 
 
     indices = {
@@ -162,16 +139,17 @@ def main(frame):
                 img = Image.open(picstr)
                 img = crop(img)
                 img.save(picstr)
-                # upload_image.main(picstr, folder_id)
+                if upload:
+                    upload_image.main(picstr, folder_id)
             else:
-                print picstr + ' exists, skipping'
-            print '%s out of %s' %(count,total_images/len(indices))
+                print('%s exists, skipping' %(picstr))
+            print('%s out of %s' %(count,total_images/len(indices)))
     browser.quit()
 
-thread.start_new_thread(main, ('BR',))
-thread.start_new_thread(main, ('TR',))
-thread.start_new_thread(main, ('TL',))
-thread.start_new_thread(main, ('BL',))
+_thread.start_new_thread(main, ('BR',))
+_thread.start_new_thread(main, ('TR',))
+_thread.start_new_thread(main, ('TL',))
+_thread.start_new_thread(main, ('BL',))
 
 while 1:
     pass

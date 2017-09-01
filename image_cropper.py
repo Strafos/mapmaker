@@ -1,5 +1,6 @@
-from PIL import Image
 import math
+
+from PIL import Image
 
 img = Image.open('croppedMap.8.jpg')
 

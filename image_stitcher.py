@@ -1,13 +1,13 @@
-from PIL import Image
 import math
 import os
-import upload_image
 
-### VARIABLES
-# MAKE SURE THESE MATCH THE ONES IN image_maker.py 
-PIXEL_LENGTH = 800 #Length and width of each cropped screenshot.
-IMG_COUNTER = 10 # 2n - 1 = Number of rows and columns of images
-pic_format = '.png' # Use png for 65500 pixel+ images
+from PIL import Image
+
+# Look in constants.py to change map settings
+from constants import *
+upload = False
+if upload:
+    import upload_image
 
 # Convert to positive indices
 def pos_indices(int):
@@ -31,4 +31,5 @@ for i in range(-IMG_COUNTER+1, IMG_COUNTER):
         # os.remove(picstr)
 
 final_img.save('./map/FULL_MAP' + pic_format)
-upload_image.main('./map/FULL_MAP' + pic_format, '')
+if upload:
+    upload_image.main('./map/FULL_MAP' + pic_format, '')

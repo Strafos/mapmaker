@@ -6,7 +6,12 @@ import hashlib
 from selenium import webdriver
 from PIL import Image
 
-import upload_image
+# Look in constants.py to change map settings
+from constants import *
+# Change upload to true to set up google drive upload capabiltiies
+upload = False
+if upload:
+    import upload_image
 
 # Create a URL for specific latitude, longitude and zoom
 # 
