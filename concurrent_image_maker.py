@@ -9,6 +9,7 @@ import hashlib
 import sys
 
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from PIL import Image
 
 
@@ -76,9 +77,18 @@ def main(frame):
     make_dir('./map')
     make_dir('./map_data')
 
+    # There are some bugs with chromedriver maximizing
+    def keeptrying():
+        try:
+            browser.maximize_window()
+        except:
+            print('worked lol')
+            keeptrying()
+
     # Initialize browser and get DPI and resolution of the monitor 
     browser = webdriver.Chrome()
-    browser.maximize_window()
+    # browser.maximize_window()
+    keeptrying()
     browser.get('https://www.infobyip.com/detectmonitordpi.php')
     DPI = browser.find_element_by_xpath('//*[@id="text"]').text
     idx = DPI.find(' ')
