@@ -1,5 +1,6 @@
 config.py
 .vscode
-test.py
 *.json
 *.pyc
+map
+map_data
