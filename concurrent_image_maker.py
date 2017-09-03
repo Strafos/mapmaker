@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 import _thread
-# Look in constants.py to change map settings
-from constants import *
 import time
 import os
 import errno
@@ -12,6 +10,8 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from PIL import Image
 
+# Look in constants.py to change map settings
+from constants import *
 
 # Change upload to true to set up google drive upload capabiltiies
 if UPLOAD:
@@ -74,7 +74,6 @@ def main(frame):
 
     # Make directories for storage
     make_dir('./map')
-    # make_dir('./map_data')
 
     # There are some bugs with chromedriver maximizing
     def keeptrying():
@@ -107,9 +106,6 @@ def main(frame):
         idx = URL.find(',')
         y_center = float(URL[URL.find('@') + 1:idx]) #Note latitude is Y and longitude is X
         x_center = float(URL[idx + 1:URL.rfind(',')])
-        y_center = 40.776616
-        x_center = -73.966324
-
 
     # Hash coordinates to get unique tag
     hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
