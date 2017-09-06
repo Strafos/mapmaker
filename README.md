@@ -20,3 +20,5 @@ For large maps, it may be easier to run the main program in separate parts. For 
 Another feature for large maps is `concurrent_image_maker.py` which splits the map up and generates constituant images faster. After images are generated, `image_sticher.py` can be used to create the full map.
 
 ## Examples:
+https://drive.google.com/open?id=0B0lHgBCriwW_bWlSaXY2NmZxME0
+These are very large files and may crash your computer. I would recommend at least 16GB RAM
