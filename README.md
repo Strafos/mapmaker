@@ -6,6 +6,17 @@ Ever since middle school, I've done a lot of exploring. By senior year of high s
 
 mapmaker is a revisit to the same problem. I decided to build a program so I could create a map for where ever my life would lead me. When zoomed out, google maps provides a map over a large area with low detail. Zoomed in, the map is high detail over small area. To create a large map with high detail, the program iterates through thousands of zoomed in map pieces and stitches them together into one giant map.
 
+## Examples:
+Ithaca map (Low quality, had to be resized to upload to imgur)
+![map](https://i.imgur.com/2yYDQFh.jpg)
+
+Map of Ithaca printed out on 4'x8' banner
+![Ithaca Map](https://i.imgur.com/xKy0zNT.jpg)
+
+Full map file: https://drive.google.com/open?id=0B0lHgBCriwW_bWlSaXY2NmZxME0
+
+This file is very large and may crash your computer (it crashes mine) Please be careful when you open it. 
+
 ## Dependencies:
 Pillow (pip install Pillow)
 
@@ -24,13 +35,3 @@ For large maps, it may be easier to run the main program in separate parts. For 
 
 Another feature for large maps is `concurrent_image_maker.py` which splits the map up and generates constituant images faster. After images are generated, `image_sticher.py` can be used to create the full map.
 
-## Examples:
-Ithaca map (Image had to be resized to upload to imgur)
-![map](https://i.imgur.com/2yYDQFh.jpg)
-
-Map of Ithaca printed out
-![Ithaca Map](https://i.imgur.com/xKy0zNT.jpg)
-
-Full map file: https://drive.google.com/open?id=0B0lHgBCriwW_bWlSaXY2NmZxME0
-
-This file is very large files and may crash your computer, so be careful when you open it. 
