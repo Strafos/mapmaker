@@ -25,7 +25,8 @@ For large maps, it may be easier to run the main program in separate parts. For 
 Another feature for large maps is `concurrent_image_maker.py` which splits the map up and generates constituant images faster. After images are generated, `image_sticher.py` can be used to create the full map.
 
 ## Examples:
-![Map of Ithaca spawned on my bed](https://i.imgur.com/xKy0zNT.jpg)
+Map of Ithaca sprawed out on my bed
+!(https://i.imgur.com/xKy0zNT.jpg)
 
 Full map file: https://drive.google.com/open?id=0B0lHgBCriwW_bWlSaXY2NmZxME0
 
