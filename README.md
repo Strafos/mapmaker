@@ -26,7 +26,7 @@ Another feature for large maps is `concurrent_image_maker.py` which splits the m
 
 ## Examples:
 Map of Ithaca sprawed out on my bed
-!(https://i.imgur.com/xKy0zNT.jpg)
+![Ithaca Map](https://i.imgur.com/xKy0zNT.jpg)
 
 Full map file: https://drive.google.com/open?id=0B0lHgBCriwW_bWlSaXY2NmZxME0
 
