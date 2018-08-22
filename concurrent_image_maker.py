@@ -18,6 +18,8 @@ if UPLOAD:
     import upload_image
 
 def main(frame):
+    y_center = 42.352819  # Latitude (y_center is not a mistake!)
+    x_center = -71.100256 # Longitude
 
     # Create a URL for specific latitude, longitude and zoom
     # 
@@ -94,7 +96,8 @@ def main(frame):
 
     # Get aspect ratio of monitor to calculate coordinate equivalent of 800 pixels 
     browser.get('https://www.infobyip.com/detectscreenresolution.php')
-    ratio = float(browser.find_element_by_xpath('//*[@id="aspect_ratio"]').text)
+    ratio_str = browser.find_element_by_xpath('//*[@id="aspect_ratio"]').text
+    ratio = float(ratio_str[ratio_str.index('=')+1:])
     ASPECT_RATIO_SCALING = ratio / CALIBRATED_ASPECT_RATIO
     CALIBRATED_UNIT_Y = 0.00171849462 - .0004516129 * ASPECT_RATIO_SCALING
 
@@ -108,7 +111,7 @@ def main(frame):
         x_center = float(URL[idx + 1:URL.rfind(',')])
 
     # Hash coordinates to get unique tag
-    hash_tag = hashlib.sha256(str(x_center + y_center)).hexdigest()[:3]
+    hash_tag = hashlib.sha256(str(x_center + y_center).encode('utf-8')).hexdigest()[:3]
     if UPLOAD:
         folder_id = upload_image.create_folder(hash_tag)
     else:

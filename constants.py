@@ -2,14 +2,14 @@
 # These values affect the view of the map
 UPLOAD = False        # True to upload images to drive
 ENTER_COOR = True     # True to enter personal coordinates, false for default
-y_center = 40.776616  # Latitude (y_center is not a mistake!)
-x_center = -73.966324 # Longitude
-DESIRED_ZOOM = '21' # Zoom level of map. 2x zoom for each integer increment  
+y_center = 42.352819  # Latitude (y_center is not a mistake!)
+x_center = -71.100256 # Longitude
+DESIRED_ZOOM = '19' # Zoom level of map. 2x zoom for each integer increment  
                     # Must be an integer
                     # No significant detail increase after zoom = 19
                     # Max zoom is 21
 pic_format = '.png' # Use png for large images (pixel dimension > 65500)
-IMG_COUNTER = 2 # Size of the map. Values < 5 will take less than a minute. 
+IMG_COUNTER = 22 # Size of the map. Values < 5 will take less than a minute. 
                 # For anything > 20, use concurrent_image_maker    
                 
 
